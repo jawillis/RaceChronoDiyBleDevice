@@ -14,8 +14,10 @@
 //  VCC | 3.3V
 const int CS_PIN = 7;
 const int IRQ_PIN = 9;
+const int TX_PIN = 17;
+const int RX_PIN = 16;
 
-const long QUARTZ_CLOCK_FREQUENCY = 16 * 1E6;  // 16 MHz.
+const long QUARTZ_CLOCK_FREQUENCY = 8 * 1E6;  // 16 MHz.
 const uint32_t SPI_FREQUENCY = 10 * 1E6;  // 10 MHz.
 const long BAUD_RATE = 500 * 1E3;  // 500k.
 
@@ -173,9 +175,13 @@ void waitForConnection() {
 
 bool startCanBusReader() {
   Serial.println("Connecting to the CAN bus...");
+  #if defined(ARDUINO_ARCH_NRF52)
   CAN.setClockFrequency(QUARTZ_CLOCK_FREQUENCY);
   CAN.setSPIFrequency(SPI_FREQUENCY);
   CAN.setPins(CS_PIN, IRQ_PIN);
+  #elif defined(ARDUINO_ARCH_ESP32)
+  CAN.setPins(RX_PIN, TX_PIN);
+  #endif
 
   boolean result = CAN.begin(BAUD_RATE);
   if (!result) {
@@ -201,7 +207,7 @@ void loop() {
 
   // Not clear how heavy is the Bluefruit.connected() call. Only check the
   // connectivity every 100 iterations to avoid stalling the CAN bus loop.
-  if ((loop_iteration % 100) == 0 && !Bluefruit.connected()) {
+  if ((loop_iteration % 100) == 0 && !RaceChronoBle.isConnected()) {
     Serial.println("RaceChrono disconnected!");
     raceChronoHandler.handleDisconnect();
     stopCanBusReader();
