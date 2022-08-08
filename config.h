@@ -4,6 +4,13 @@
 // Change the value
 #define DEVICE_NAME "BLE CAN device demo"
 
+// OTA updates over wifi if the OTA_UPDATES flag is defined.
+// At bootup the device will search for the defined SSID and start up a webserver upon connection.
+// The new .bin file can be uploaded by navigating to http://<ip address>/update
+#define OTA_UPDATES
+#define OTA_WIFI_SSID "RaceUpdate"
+#define OTA_WIFI_PASSWORD "Password"
+
 // We use RaceChronoPidMap to keep track of stuff for each CAN ID.
 // In this implementation, we're going to ignore "update intervals" requested by
 // RaceChrono, and instead send every Nth CAN message we receive, per CAN ID, where
@@ -22,11 +29,11 @@ uint8_t getUpdateRateDivider(uint32_t can_id);
 // following lines:
 //#include "configs/ft86_gen1.h"
 //#include "configs/ft86_gen2.h"
-//#include "configs/e46.h"
+#include "configs/e46.h"
 
 // Once you read all the comments and address what they asked of you, please
 // uncomment the nest line:
-//#define I_READ_THE_COMMENTS
+// #define I_READ_THE_COMMENTS
 
 #if !defined(I_READ_THE_COMMENTS)
 #error Please open config.h and read all the comments!

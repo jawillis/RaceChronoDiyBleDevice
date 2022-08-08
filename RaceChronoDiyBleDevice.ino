@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <CAN.h>
 #include <RaceChrono.h>
 
@@ -20,6 +21,66 @@ const int RX_PIN = 16;
 const long QUARTZ_CLOCK_FREQUENCY = 8 * 1E6;  // 16 MHz.
 const uint32_t SPI_FREQUENCY = 10 * 1E6;  // 10 MHz.
 const long BAUD_RATE = 500 * 1E3;  // 500k.
+
+#ifdef OTA_UPDATES
+
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h>
+
+// const char* ssid = "JDUB2";
+// const char* password = "5127899241";
+const int STARTUP_WAIT = 10000;
+
+AsyncWebServer server(80);
+
+bool wifi_connected = false;
+bool startup_ota = true;
+
+void start_wifi(){
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(OTA_WIFI_SSID, OTA_WIFI_PASSWORD);
+}
+
+void check_wifi() {
+  if (startup_ota) {
+    unsigned long currentMillis = millis();
+    if (WiFi.status() != WL_CONNECTED) {
+      if (currentMillis > STARTUP_WAIT) {
+        startup_ota = false;
+        WiFi.disconnect(true);
+        Serial.println("");
+        Serial.print("SSID ");
+        Serial.print(OTA_WIFI_SSID);
+        Serial.println(" not found. Stopping WiFi.");
+      }
+      wifi_connected = false;
+  //    while (WiFi.status() != WL_CONNECTED) {
+  //      delay(500);
+        Serial.print(".");
+  //    }
+    } else {
+      if (wifi_connected == false) {
+        wifi_connected = true;
+        Serial.println("");
+        Serial.print("Connected to ");
+        Serial.println(OTA_WIFI_SSID);
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
+      
+        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+          request->send(200, "text/plain", "Hi! I am ESP32.");
+        });
+      
+        AsyncElegantOTA.begin(&server);    // Start ElegantOTA
+        server.begin();
+        Serial.println("HTTP server started");
+      }
+    }
+  }
+}
+#endif
 
 bool isCanBusReaderActive = false;
 long lastCanMessageReceivedMs;
@@ -142,6 +203,9 @@ public:
 void setup() {
   uint32_t startTimeMs = millis();
   Serial.begin(115200);
+  #ifdef OTA_UPDATES
+  start_wifi();
+  #endif
   while (!Serial && millis() - startTimeMs < 5000) {
   }
 
@@ -157,6 +221,9 @@ void waitForConnection() {
   uint32_t iteration = 0;
   bool lastPrintHadNewline = false;
   while (!RaceChronoBle.waitForConnection(1000)) {
+    #ifdef OTA_UPDATES
+    check_wifi();
+    #endif
     Serial.print(".");
     if ((++iteration) % 10 == 0) {
       lastPrintHadNewline = true;
@@ -171,6 +238,9 @@ void waitForConnection() {
   }
 
   Serial.println("Connected.");
+  #ifdef OTA_UPDATES
+  WiFi.disconnect(true);
+  #endif
 }
 
 bool startCanBusReader() {
