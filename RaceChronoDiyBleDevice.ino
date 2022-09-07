@@ -15,12 +15,20 @@
 //  VCC | 3.3V
 const int CS_PIN = 7;
 const int IRQ_PIN = 9;
-const int TX_PIN = 17;
-const int RX_PIN = 16;
+
+#ifdef EZSBC_BOARD
+const int TX_PIN = 16;
+const int RX_PIN = 17;
+const long BAUD_RATE = 1000 * 1E3;  // 500k.
+#else
+const int TX_PIN = 26;
+const int RX_PIN = 27;
+const long BAUD_RATE = 500 * 1E3;  // 500k.
+#endif
 
 const long QUARTZ_CLOCK_FREQUENCY = 8 * 1E6;  // 16 MHz.
 const uint32_t SPI_FREQUENCY = 10 * 1E6;  // 10 MHz.
-const long BAUD_RATE = 500 * 1E3;  // 500k.
+//const long BAUD_RATE = 1000 * 1E3;  // 500k.
 
 #ifdef OTA_UPDATES
 
@@ -240,6 +248,7 @@ void waitForConnection() {
   Serial.println("Connected.");
   #ifdef OTA_UPDATES
   WiFi.disconnect(true);
+  delay(1000);
   #endif
 }
 
@@ -364,7 +373,7 @@ struct BufferedMessage {
 // Circular buffer to put received messages, used to buffer messages in memory
 // (which is relatively abundant) instead of relying on the very limited
 // buffering ability of the MCP2515.
-const uint8_t NUM_BUFFERS = 16;  // Must be a power of 2, but less than 256.
+const uint8_t NUM_BUFFERS = 128;  // Must be a power of 2, but less than 256.
 BufferedMessage buffers[NUM_BUFFERS];
 uint8_t bufferToWriteTo = 0;
 uint8_t bufferToReadFrom = 0;
