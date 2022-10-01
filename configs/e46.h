@@ -9,28 +9,28 @@ uint8_t getUpdateRateDivider(uint32_t can_id) {
   // vehicle speed
   // Let's go for ~10 per second
   if (can_id == 339) {
-    return 2;
+    return 7;
   }
 
   // This is sent over the CAN bus 140 times per second and carries:
   // individual wheel speeds 
   // we want ~10.
   if (can_id == 496) {
-    return 2;
+    return 7;
   }
 
   // This is sent over the CAN bus 100 times per second and carries:
   // engine RPM 
   // we want ~10.
   if (can_id == 790) {
-    return 2;
+    return 5;
   }
 
   // This is sent over the CAN bus 100 times per second and carries:
   // Steering angle 
   // we want ~10.
   if (can_id == 501) {
-    return 2;
+    return 5;
   }
 
   // This is sent over the CAN bus 100 times per second and carries:
@@ -39,7 +39,7 @@ uint8_t getUpdateRateDivider(uint32_t can_id) {
   // Throttle Position
   // we want ~10.
   if (can_id == 809) {
-    return 2;
+    return 5;
   }
 
   // This is sent over the CAN bus 100 times per second and carries:
