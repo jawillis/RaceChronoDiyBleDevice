@@ -19,11 +19,9 @@ const int IRQ_PIN = 9;
 #ifdef EZSBC_BOARD
 const int TX_PIN = 16;
 const int RX_PIN = 17;
-const long BAUD_RATE = 1000 * 1E3;  // 500k.
 #else
 const int TX_PIN = 26;
 const int RX_PIN = 27;
-const long BAUD_RATE = 500 * 1E3;  // 500k.
 #endif
 
 const long QUARTZ_CLOCK_FREQUENCY = 8 * 1E6;  // 16 MHz.
@@ -76,11 +74,11 @@ void check_wifi() {
         Serial.println(OTA_WIFI_SSID);
         Serial.print("IP address: ");
         Serial.println(WiFi.localIP());
-      
+
         server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
           request->send(200, "text/plain", "Hi! I am ESP32.");
         });
-      
+
         AsyncElegantOTA.begin(&server);    // Start ElegantOTA
         server.begin();
         Serial.println("HTTP server started");
@@ -284,8 +282,8 @@ void loop() {
 
   // First, verify that we have both Bluetooth and CAN up and running.
 
-  // Not clear how heavy is the Bluefruit.connected() call. Only check the
-  // connectivity every 100 iterations to avoid stalling the CAN bus loop.
+  // Not clear how heavy is the isConnected() call. Only check the connectivity
+  // every 100 iterations to avoid stalling the CAN bus loop.
   if ((loop_iteration % 100) == 0 && !RaceChronoBle.isConnected()) {
     Serial.println("RaceChrono disconnected!");
     raceChronoHandler.handleDisconnect();
